@@ -64,8 +64,8 @@ fn main() {
     }
 
     cmd_args.append(&mut vec![
-        "--input-file=~/.cache/adventofcode/token".into(),
-        tmp_file_path.to_string_lossy().to_string(),
+        "--session-file=/home/mat/.cache/adventofcode/token".into(),
+        "--input-file=/tmp/aoc_input_tmp".into(),
         "--day".into(),
         args.day.to_string(),
         "download".into(),
