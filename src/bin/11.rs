@@ -1,6 +1,8 @@
 #![allow(unused_variables)]
 #![allow(dead_code)]
 
+use std::collections::HashSet;
+
 #[derive(Debug, Clone)]
 enum Operation {
     Mult,
@@ -9,7 +11,7 @@ enum Operation {
 }
 #[derive(Debug, Clone)]
 struct Monkey {
-    items: Vec<u32>,
+    items: Vec<HashSet<u32>>,
     operation_cst: u32,
     divisible_cst: u32,
     if_true: usize,
@@ -32,7 +34,15 @@ impl Monkey {
                 let q = q.replace(',', "");
                 let nums = q.split_whitespace().collect::<Vec<&str>>();
                 for item in nums {
-                    items.push(item.parse().unwrap())
+                    let mut num: u32 = item.parse().unwrap();
+                    let mut q = HashSet::new();
+                    for i in 2..num {
+                        if num % 2 == 0 {
+                            q.insert(i);
+                            num / i;
+                        }
+                    }
+                    items.push(q);
                 }
             } else if line.contains("Operation:") {
                 let q = line.replace("Operation: new = old ", "");
@@ -71,39 +81,40 @@ impl Monkey {
     }
 }
 pub fn part_one(input: &str) -> Option<u32> {
-    let mut monkeys = vec![];
-    for paragraph in input.split("\n\n") {
-        monkeys.push(Monkey::new(paragraph));
-    }
-    for _ in 0..20 {
-        for j in 0..monkeys.len() {
-            let mut m = monkeys[j].clone();
-            while !m.items.is_empty() {
-                m.inspect_count += 1;
-                let mut it = *m.items.first().unwrap();
-                m.items.remove(0);
-                match m.operation {
-                    Operation::Mult => it *= m.operation_cst,
-                    Operation::Add => it += m.operation_cst,
-                    Operation::Square => it *= it,
-                }
-                it /= 3;
-                if it % m.divisible_cst == 0 {
-                    monkeys[m.if_true].items.push(it);
-                } else {
-                    monkeys[m.if_false].items.push(it);
-                }
-            }
-            monkeys[j] = m;
-        }
-    }
-    let mut out = vec![];
-    for m in monkeys {
-        out.push(m.inspect_count);
-    }
-    out.sort();
-    let out: Vec<u32> = out.into_iter().rev().collect();
-    Some(out[0] * out[1])
+    // let mut monkeys = vec![];
+    // for paragraph in input.split("\n\n") {
+    //     monkeys.push(Monkey::new(paragraph));
+    // }
+    // for _ in 0..20 {
+    //     for j in 0..monkeys.len() {
+    //         let mut m = monkeys[j].clone();
+    //         while !m.items.is_empty() {
+    //             m.inspect_count += 1;
+    //             let mut it = *m.items.first().unwrap();
+    //             m.items.remove(0);
+    //             match m.operation {
+    //                 Operation::Mult => it *= m.operation_cst,
+    //                 Operation::Add => it += m.operation_cst,
+    //                 Operation::Square => it *= it,
+    //             }
+    //             it /= 3;
+    //             if it % m.divisible_cst == 0 {
+    //                 monkeys[m.if_true].items.push(it);
+    //             } else {
+    //                 monkeys[m.if_false].items.push(it);
+    //             }
+    //         }
+    //         monkeys[j] = m;
+    //     }
+    // }
+    // let mut out = vec![];
+    // for m in monkeys {
+    //     out.push(m.inspect_count);
+    // }
+    // out.sort();
+    // let out: Vec<u32> = out.into_iter().rev().collect();
+    // Some(out[0] * out[1])
+    None
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
@@ -116,14 +127,16 @@ pub fn part_two(input: &str) -> Option<u32> {
             let mut m = monkeys[j].clone();
             while !m.items.is_empty() {
                 m.inspect_count += 1;
-                let mut it = *m.items.first().unwrap();
+                let mut it = m.items.first().unwrap().clone();
                 m.items.remove(0);
                 match m.operation {
-                    Operation::Mult => it *= m.operation_cst,
-                    Operation::Add => it += m.operation_cst,
-                    Operation::Square => it *= it,
+                    Operation::Mult => {
+                        it.insert(m.operation_cst);
+                    }
+                    Operation::Add => (),
+                    Operation::Square => (),
                 }
-                if it % m.divisible_cst == 0 {
+                if it.contains(&m.divisible_cst) {
                     monkeys[m.if_true].items.push(it);
                 } else {
                     monkeys[m.if_false].items.push(it);
